@@ -11,4 +11,7 @@ dependencies = [
     "scipy>=1.15.0",
     "jupyter>=1.1.1",
     "lab>=8.5",
+    "flask>=3.0.0",
+    "pytest>=8.0.0",
+    "pytest-mock>=3.12.0",
 ]

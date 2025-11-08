@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ result.ticker_name }} Analysis Results</title>
+    <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        th {
+            text-align: left;
+            background-color: var(--accent-bg);
+        }
+        td, th {
+            padding: 0.5rem;
+        }
+        .positive {
+            color: #d63384;
+        }
+        .negative {
+            color: #28a745;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .stat-card {
+            background-color: var(--accent-bg);
+            padding: 1rem;
+            border-radius: 5px;
+        }
+        .stat-card h4 {
+            margin: 0 0 0.5rem 0;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+        .stat-card p {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid var(--border);
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>{{ result.ticker_name }} Analysis Results</h1>
+        <p><a href="/">← Analyze another index</a></p>
+    </header>
+
+    <main>
+        <section>
+            <h2>Summary Statistics</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h4>Data Points</h4>
+                    <p>{{ "{:,}".format(result.summary.data_points) }}</p>
+                </div>
+                <div class="stat-card">
+                    <h4>Date Range</h4>
+                    <p>{{ result.summary.date_range }}</p>
+                </div>
+                <div class="stat-card">
+                    <h4>Mean Daily Return</h4>
+                    <p>{{ "%.6f" | format(result.summary.mean) }}</p>
+                </div>
+                <div class="stat-card">
+                    <h4>Standard Deviation</h4>
+                    <p>{{ "%.6f" | format(result.summary.std) }}</p>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2>Distribution Analysis</h2>
+            <p>
+                This table compares the observed frequency of extreme events (measured in standard deviations)
+                against what would be expected under a normal (Gaussian) distribution. Positive differences
+                indicate "fat tails" - more extreme events than normal distribution predicts.
+            </p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Threshold</th>
+                        <th>Observed</th>
+                        <th>Expected (Normal)</th>
+                        <th>Difference</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in result.distribution %}
+                    <tr>
+                        <td>|Z| &gt; {{ row.threshold }}σ</td>
+                        <td>{{ row.observed_count }} ({{ "%.2f" | format(row.observed_pct) }}%)</td>
+                        <td>{{ "%.1f" | format(row.expected_count) }} ({{ "%.2f" | format(row.expected_pct) }}%)</td>
+                        <td class="{% if row.diff_count > 0 %}positive{% else %}negative{% endif %}">
+                            {{ "%+.1f" | format(row.diff_count) }} ({{ "%+.2f" | format(row.diff_pct) }}%)
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+
+        <section>
+            <h2>Z-Score Time Series Plot</h2>
+            <p>
+                This plot shows the standardized daily log returns (z-scores) over time. Reference lines
+                indicate statistical significance levels: ±1σ (68%), ±2σ (95%), and ±3σ (99.7%).
+            </p>
+            <img src="/plot/{{ result.ticker_name }}" alt="{{ result.ticker_name }} Z-Score Plot">
+        </section>
+
+        <section>
+            <h3>Interpretation</h3>
+            <p>
+                Z-scores represent how many standard deviations each daily price change is from the mean.
+                In a normal distribution, we would expect:
+            </p>
+            <ul>
+                <li>68% of values within ±1σ</li>
+                <li>95% of values within ±2σ</li>
+                <li>99.7% of values within ±3σ</li>
+            </ul>
+            <p>
+                Financial markets typically show more extreme events (beyond ±3σ) than predicted by normal
+                distribution theory, demonstrating the "fat tail" phenomenon described by Benoit Mandelbrot
+                in "The Misbehaviour of Markets."
+            </p>
+        </section>
+    </main>
+
+    <footer>
+        <p>Data sourced from Yahoo Finance | <a href="/">Analyze another index</a></p>
+    </footer>
+</body>
+</html>

@@ -95,23 +95,36 @@ def plot_z_scores(df, ticker_name):
     print(f"Plot saved: {fname}")
 
 
-def compute_distribution_stats(z_scores, ticker_name):
-    """Compares observed z-score distribution against theoretical standard normal distribution."""
+def compute_distribution_stats(z_scores, ticker_name, return_data=False):
+    """Compares observed z-score distribution against theoretical standard normal distribution.
+
+    Args:
+        z_scores: Series of z-scores
+        ticker_name: Name of the ticker being analyzed
+        return_data: If True, return the distribution data instead of printing
+
+    Returns:
+        If return_data is True, returns a list of dictionaries with distribution statistics
+    """
     total_days = len(z_scores)
 
-    print(f"\n{'-' * 60}")
-    print(f"Distribution Analysis: {ticker_name}")
-    print(f"{'-' * 60}")
-    print(f"Total days: {total_days}\n")
+    if not return_data:
+        print(f"\n{'-' * 60}")
+        print(f"Distribution Analysis: {ticker_name}")
+        print(f"{'-' * 60}")
+        print(f"Total days: {total_days}\n")
 
     # Define thresholds we are interested in.
     # Each threshold represents the number of standard deviations away from the mean.
     thresholds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
-    print(
-        f"{'Threshold':<12} {'Observed':<20} {'Expected (Normal)':<20} {'Difference':<15}"
-    )
-    print(f"{'-' * 70}")
+    distribution_data = []
+
+    if not return_data:
+        print(
+            f"{'Threshold':<12} {'Observed':<20} {'Expected (Normal)':<20} {'Difference':<15}"
+        )
+        print(f"{'-' * 70}")
 
     for threshold in thresholds:
         # Observed counts
@@ -128,13 +141,94 @@ def compute_distribution_stats(z_scores, ticker_name):
         diff_count = observed_count - expected_count
         diff_pct = observed_pct - expected_pct
 
-        print(
-            f"|Z| > {threshold}σ    {observed_count:>5} ({observed_pct:>5.2f}%)     "
-            f"{expected_count:>5.1f} ({expected_pct:>5.2f}%)      "
-            f"{diff_count:>+6.1f} ({diff_pct:>+5.2f}%)"
+        if return_data:
+            distribution_data.append(
+                {
+                    "threshold": threshold,
+                    "observed_count": int(observed_count),
+                    "observed_pct": observed_pct,
+                    "expected_count": expected_count,
+                    "expected_pct": expected_pct,
+                    "diff_count": diff_count,
+                    "diff_pct": diff_pct,
+                }
+            )
+        else:
+            print(
+                f"|Z| > {threshold}σ    {observed_count:>5} ({observed_pct:>5.2f}%)     "
+                f"{expected_count:>5.1f} ({expected_pct:>5.2f}%)      "
+                f"{diff_count:>+6.1f} ({diff_pct:>+5.2f}%)"
+            )
+
+    if not return_data:
+        print(f"{'-' * 70}\n")
+    else:
+        return distribution_data
+
+
+def analyze_index_for_web(index_name):
+    """Analyzes a single index and returns data for web display.
+
+    Args:
+        index_name: Name of the index (e.g., "DJIA", "SP500")
+
+    Returns:
+        Dictionary containing:
+            - ticker_name: Name of the ticker
+            - summary: Dict with data_points, date_range, mean, std
+            - distribution: List of distribution statistics
+            - plot_path: Path to the z-score plot
+            - csv_path: Path to the analysis CSV
+    """
+    if index_name not in TICKERS:
+        raise ValueError(
+            f"Invalid index name: {index_name}. Valid options: {list(TICKERS.keys())}"
         )
 
-    print(f"{'-' * 70}\n")
+    symbol = TICKERS[index_name]
+    today = time.strftime("%Y-%m-%d")
+
+    # Check if today's analysis already exists (caching)
+    csv_path = f"output/{index_name}/{today}_analysis.csv"
+    plot_path = f"output/{index_name}/{today}_z_scores.png"
+
+    # If cache exists, load it
+    if os.path.exists(csv_path):
+        df = pd.read_csv(csv_path, index_col=0, parse_dates=True)
+    else:
+        # Run fresh analysis
+        df = fetch_historical_price_data(symbol, period="max")
+        df = compute_daily_price_change(df)
+        df = df.dropna()
+        df["Z-Score"] = z_score(df["Delta"])
+
+        # Save results
+        os.makedirs(os.path.dirname(csv_path), exist_ok=True)
+        df.to_csv(csv_path)
+
+        # Generate plot
+        plot_z_scores(df, index_name)
+
+    # Prepare summary statistics
+    summary = {
+        "data_points": len(df),
+        "date_range": f"{df.index[0].strftime('%Y-%m-%d')} to {df.index[-1].strftime('%Y-%m-%d')}",
+        "mean": float(df["Delta"].mean()),
+        "std": float(df["Delta"].std()),
+    }
+
+    # Get distribution statistics
+    distribution = compute_distribution_stats(
+        df["Z-Score"], index_name, return_data=True
+    )
+
+    return {
+        "ticker_name": index_name,
+        "summary": summary,
+        "distribution": distribution,
+        "plot_path": plot_path,
+        "csv_path": csv_path,
+    }
 
 
 def main():
