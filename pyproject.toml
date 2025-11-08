@@ -1,8 +1,12 @@
 [project]
 name = "demeaner"
 version = "0.1.0"
-description = "Add your description here"
+description = "Market Index Z-Score Analysis - Inspired by 'The Misbehaviour of Markets' by Benoit Mandelbrot"
 readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "Kshitij", email = "hi@kxsh.dev"}
+]
 requires-python = ">=3.14"
 dependencies = [
     "pandas>=2.3.3",
@@ -14,4 +18,5 @@ dependencies = [
     "flask>=3.0.0",
     "pytest>=8.0.0",
     "pytest-mock>=3.12.0",
+    "gunicorn>=23.0.0",
 ]

@@ -1,63 +1,98 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Market Index Z-Score Analysis</title>
-    <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
-</head>
-<body>
-    <header>
-        <h1>Market Index Z-Score Analysis</h1>
-        <p>Analyze the frequency distribution of price changes for major stock market indices</p>
-    </header>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Index Z-Score Analysis | Demeaner</title>
+        <link
+            rel="icon"
+            type="image/png"
+            href="{{ url_for('static', filename='images/favicon.png') }}"
+        />
+        <link
+            rel="stylesheet"
+            href="https://cdn.simplecss.org/simple.min.css"
+        />
 
-    <main>
-        <section>
-            <h2>Select an Index</h2>
-            <p>Choose a market index to analyze its daily log returns and z-score distribution:</p>
-
-            <form action="/analyze" method="post">
-                <label for="index">Market Index:</label>
-                <select name="index" id="index" required>
-                    <option value="">-- Select an index --</option>
-                    {% for ticker in tickers %}
-                    <option value="{{ ticker }}">{{ ticker }}</option>
-                    {% endfor %}
-                </select>
-
-                <button type="submit">Analyze</button>
-            </form>
-        </section>
-
-        <section>
-            <h3>Available Indices</h3>
-            <ul>
-                <li><strong>DJIA</strong> - Dow Jones Industrial Average</li>
-                <li><strong>SP500</strong> - S&amp;P 500</li>
-                <li><strong>NASDAQ</strong> - NASDAQ Composite</li>
-                <li><strong>NIFTY50</strong> - Indian NIFTY 50</li>
-            </ul>
-        </section>
-
-        <section>
-            <h3>About This Analysis</h3>
+        <!-- Open Graph meta tags for social sharing -->
+        <meta property="og:title" content="Index Z-Score Analysis | Demeaner" />
+        <meta
+            property="og:description"
+            content="Analyze the frequency distribution of price changes for major stock market indices. Inspired by 'The Misbehaviour of Markets' by Benoit Mandelbrot."
+        />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://kxsh.dev/" />
+    </head>
+    <body>
+        <header>
+            <h1>Demeaner</h1>
             <p>
-                This tool analyzes the distribution of daily price changes in stock market indices,
-                inspired by "The Misbehaviour of Markets" by Benoit Mandelbrot. The analysis computes
-                z-scores (standardized returns) and compares the observed frequency of extreme events
-                against what would be expected under a normal (Gaussian) distribution.
+                Index Z-Score Analysis inspired by "The Misbehaviour of Markets"
+                by Benoit Mandelbrot
             </p>
-            <p>
-                The results typically show that financial markets have "fat tails" - more extreme
-                events than predicted by normal distribution theory, supporting the use of power-law
-                and fractal-based models for financial risk.
-            </p>
-        </section>
-    </main>
+        </header>
 
-    <footer>
-        <p>Data sourced from Yahoo Finance</p>
-    </footer>
-</body>
+        <main>
+            <section>
+                <h2>Select an Index</h2>
+                <p>
+                    Choose a market index to analyze its daily log returns and
+                    z-score distribution:
+                </p>
+
+                <form action="/analyze" method="post">
+                    <label for="index">Market Index:</label>
+                    <select name="index" id="index" required>
+                        <option value="">-- Select an index --</option>
+                        {% for ticker in tickers %}
+                        <option value="{{ ticker }}">{{ ticker }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <button type="submit">Analyze</button>
+                </form>
+            </section>
+
+            <section>
+                <h3>Available Indices</h3>
+                <ul>
+                    <li>
+                        <strong>DJIA</strong> - Dow Jones Industrial Average
+                    </li>
+                    <li><strong>SP500</strong> - S&amp;P 500</li>
+                    <li><strong>NASDAQ</strong> - NASDAQ Composite</li>
+                    <li><strong>NIFTY50</strong> - Indian NIFTY 50</li>
+                </ul>
+            </section>
+
+            <section>
+                <h3>About This Analysis</h3>
+                <p>
+                    This tool analyzes the distribution of daily price changes
+                    in stock market indices, inspired by "The Misbehaviour of
+                    Markets" by Benoit Mandelbrot. The analysis computes
+                    z-scores (standardized returns) and compares the observed
+                    frequency of extreme events against what would be expected
+                    under a normal (Gaussian) distribution.
+                </p>
+                <p>
+                    The results typically show that financial markets have "fat
+                    tails" - more extreme events than predicted by normal
+                    distribution theory, supporting the use of power-law and
+                    fractal-based models for financial risk.
+                </p>
+            </section>
+        </main>
+
+        <footer>
+            <p>Data sourced from Yahoo Finance</p>
+
+            <p>Powered by Flask and Simple.css</p>
+            <p>
+                © 2025 <a href="https://kxsh.dev">Kshitij Saraogi</a> ·
+                Licensed under
+                <a href="https://opensource.org/licenses/MIT">MIT License</a>
+            </p>
+        </footer>
+    </body>
 </html>
